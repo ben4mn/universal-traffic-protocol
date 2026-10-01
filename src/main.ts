@@ -5,6 +5,8 @@ import {
   type SimulationSnapshot,
 } from "./simulation";
 import { CityView } from "./city";
+import { SCENARIOS, inspectScenario } from "./scenarios";
+import type { ScenarioInspection } from "./scenarios";
 
 const github = "https://github.com/ben4mn/universal-traffic-protocol";
 const icon = (name: string) => {
@@ -36,11 +38,13 @@ document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
     <section id="lab" class="lab wrap" aria-labelledby="lab-heading">
       <div class="lab-heading"><div><span class="section-number">01 /</span><h2 id="lab-heading">Compare the two cities</h2></div><button id="model-open" class="text-button">About the model ${icon("code")}</button></div>
       <div class="experiment">
-        <div class="experiment-top"><div class="scenario-buttons" role="group" aria-label="Traffic scenario"><button data-scenario="rush" class="selected" aria-pressed="true">01 <span>Rush hour</span></button><button data-scenario="school" aria-pressed="false">02 <span>The school crossing</span></button><button data-scenario="incident" aria-pressed="false">03 <span>A blocked street</span></button></div><div class="run-tools"><span id="sim-time" class="sim-time">03:00</span><button id="pause" class="icon-button" aria-label="Pause simulation">${icon("pause")}</button><button id="reset" class="icon-button" aria-label="Restart experiment">${icon("reset")}</button></div></div>
-        <div class="cities"><article class="city-panel isolated"><div class="city-label"><div><span class="city-index">A</span><h3>Fixed traffic lights</h3></div><span class="mode-note">BASELINE</span></div><canvas id="isolated-city" role="img" aria-label="Animated baseline city with fixed traffic signals and no shared information"></canvas><div class="city-key"><span><i class="car-key"></i>Moving</span><span><i class="car-key stopped-key"></i>Waiting</span></div><div class="metrics"><div><span>Delay per finished trip</span><strong id="a-delay">—<small>s</small></strong></div><div><span>Trips completed</span><strong id="a-trips">—</strong></div><div><span>In the queue</span><strong id="a-queue">—</strong></div></div></article>
-        <article class="city-panel connected"><div class="city-label"><div><span class="city-index">B</span><h3>Connected traffic lights</h3></div><span class="mode-note"><span class="live-indicator"></span>ADAPTIVE SIGNALS</span></div><canvas id="connected-city" role="img" aria-label="Animated comparison city whose participating signals use shared traffic observations"></canvas><div class="city-key"><span><i class="car-key connected-key"></i>Connected</span><span><i class="car-key"></i>Unconnected</span><button id="network-toggle" aria-pressed="true">${icon("network")}<span>Show connections</span></button></div><div class="metrics"><div><span>Delay per finished trip</span><strong id="b-delay">—<small>s</small></strong></div><div><span>Trips completed</span><strong id="b-trips">—</strong></div><div><span>In the queue</span><strong id="b-queue">—</strong></div></div></article></div>
+        <div class="experiment-top"><div class="scenario-buttons" role="group" aria-label="Traffic scenario"><button data-scenario="rush" class="selected" aria-pressed="true">01 <span>Morning commute</span></button><button data-scenario="school" aria-pressed="false">02 <span>The school crossing</span></button><button data-scenario="incident" aria-pressed="false">03 <span>Roadworks</span></button></div><div class="run-tools"><span class="clock-label">Run time</span><span id="sim-time" class="sim-time" title="Elapsed simulation time">01:00</span><button id="pause" class="icon-button" aria-label="Pause simulation">${icon("pause")}</button><button id="reset" class="icon-button" aria-label="Restart experiment">${icon("reset")}</button></div></div>
+        <div class="scenario-brief"><div><p id="scenario-location" class="scenario-location">Market Street × Oak Avenue</p><h3 id="scenario-title">Rush hour on Market Street</h3><p id="scenario-setup"></p></div><div class="scene-event"><span id="scenario-event"></span><button id="scene-replay">Replay this scene ${icon("reset")}</button></div></div>
+        <div class="view-bar"><div class="view-switch" role="group" aria-label="Simulation scale"><button data-view="micro" class="selected" aria-pressed="true"><span>Micro</span>One junction</button><button data-view="macro" aria-pressed="false"><span>Macro</span>Whole network</button></div><p id="view-note">The same run, up close</p><button id="advance" class="advance-button">Advance 3 min</button></div>
+        <div class="cities"><article class="city-panel isolated"><div class="city-label"><div><span class="city-index">A</span><h3>Fixed traffic lights</h3></div><span class="mode-note">BASELINE</span></div><canvas id="isolated-city" role="img" aria-label="Animated baseline city with fixed traffic signals and no shared information"></canvas><div class="city-key"><span><i class="car-key"></i>Moving</span><span><i class="car-key stopped-key"></i>Waiting</span></div><div class="city-readout"><p id="a-live" class="local-state"></p><div class="readout-stats"><div><span id="a-local-label-1">Approach queue</span><strong id="a-local-1">—</strong></div><div><span id="a-local-label-2">Green for</span><strong id="a-local-2">—</strong></div><div><span id="a-local-label-3">Reports</span><strong id="a-local-3">—</strong></div></div><p id="a-explanation" class="city-explanation"></p></div><div class="metrics-caption">Across the whole network</div><div class="metrics"><div><span>Delay per finished trip</span><strong id="a-delay">—<small>s</small></strong></div><div><span>Trips completed</span><strong id="a-trips">—</strong></div><div><span>In the queue</span><strong id="a-queue">—</strong></div></div></article>
+        <article class="city-panel connected"><div class="city-label"><div><span class="city-index">B</span><h3>Connected traffic lights</h3></div><span class="mode-note"><span id="b-mode-label">ADAPTIVE SIGNALS</span></span></div><canvas id="connected-city" role="img" aria-label="Animated comparison city whose participating signals use shared traffic observations"></canvas><div class="city-key"><span><i class="car-key connected-key"></i>Connected</span><span><i class="car-key"></i>Unconnected</span><button id="network-toggle" aria-pressed="true">${icon("network")}<span>Show connections</span></button></div><div class="city-readout"><p id="b-live" class="local-state"></p><div class="readout-stats"><div><span id="b-local-label-1">Approach queue</span><strong id="b-local-1">—</strong></div><div><span id="b-local-label-2">Green for</span><strong id="b-local-2">—</strong></div><div><span id="b-local-label-3">Reports</span><strong id="b-local-3">—</strong></div></div><p id="b-explanation" class="city-explanation"></p></div><div class="metrics-caption">Across the whole network</div><div class="metrics"><div><span>Delay per finished trip</span><strong id="b-delay">—<small>s</small></strong></div><div><span>Trips completed</span><strong id="b-trips">—</strong></div><div><span>In the queue</span><strong id="b-queue">—</strong></div></div></article></div>
         <div class="controls"><div class="control"><label for="adoption">Network adoption<output id="adoption-value" for="adoption">75%</output></label><input id="adoption" type="range" min="0" max="100" step="5" value="75"><div class="range-notes"><span>Nobody</span><span>Everyone</span></div></div><div class="control"><label for="demand">Traffic demand<output id="demand-value" for="demand">1.0×</output></label><input id="demand" type="range" min="40" max="200" step="10" value="100"><div class="range-notes"><span>Low demand</span><span>High demand</span></div></div><div class="control"><label for="loss">Messages lost<output id="loss-value" for="loss">0%</output></label><input id="loss" type="range" min="0" max="100" step="5" value="0"><div class="range-notes"><span>No loss</span><span>All messages lost</span></div></div></div>
-        <div class="experiment-foot"><span>${icon("network")} Same road layout and requested trips.</span><button id="speed" class="speed-button">Time: 6×</button><span>Each run starts after 3 simulated minutes</span></div>
+        <div class="experiment-foot"><span>${icon("network")} Same road layout and requested trips.</span><button id="speed" class="speed-button">Time: 1×</button><span>Street names describe a fictional city</span></div>
       </div>
       <div class="story-strip"><span class="story-kicker" id="story-kicker">01 / RUSH HOUR</span><div><h3 id="story-title">Traffic lights can respond to the queue.</h3><p id="story-body">The city on the left follows a fixed signal schedule. On the right, participating lights adjust their timing using reports from sensors and vehicles. Change adoption to see what happens.</p></div><div class="outcome"><strong id="outcome-number">—</strong><span id="outcome-label">change in delay for finished trips</span></div></div>
       <p class="model-caveat">These numbers come from a simplified traffic model. Delay is averaged over finished trips, so check the queues and trip totals too. <a href="${github}/blob/main/docs/simulation.md" target="_blank" rel="noreferrer">See assumptions and limits</a>.</p>
@@ -64,7 +68,9 @@ const $ = <T extends HTMLElement = HTMLElement>(selector: string) =>
 let scenario: Scenario = "rush";
 let paused = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 let showNetwork = true;
-let speed = 6;
+let speed = 1;
+let view: "micro" | "macro" = "micro";
+let accumulator = 0;
 let a: TrafficSimulation, b: TrafficSimulation;
 let aState: SimulationSnapshot, bState: SimulationSnapshot;
 const aView = new CityView($("#isolated-city"), false),
@@ -72,26 +78,52 @@ const aView = new CityView($("#isolated-city"), false),
 const adoption = $<HTMLInputElement>("#adoption"),
   demand = $<HTMLInputElement>("#demand"),
   loss = $<HTMLInputElement>("#loss");
-const stories: Record<
-  Scenario,
-  { kicker: string; title: string; body: string }
-> = {
-  rush: {
-    kicker: "01 / RUSH HOUR",
-    title: "Traffic lights can respond to the queue.",
-    body: "The city on the left follows a fixed signal schedule. On the right, participating lights adjust their timing using reports from sensors and vehicles. Change adoption to see what happens.",
-  },
-  school: {
-    kicker: "02 / THE CROSSING",
-    title: "Both cities give people time to cross.",
-    body: "The north-center crossing stops traffic for the same nine seconds in both cities. Connected signals can adjust to the queues that follow. Try adding traffic and see whether they keep up.",
-  },
-  incident: {
-    kicker: "03 / THE BLOCKED LANE",
-    title: "One lane slows to a crawl.",
-    body: "An eastbound lane is restricted in both cities. Vehicles with fresh information can choose another route when they enter the network. Signals respond to the resulting queues.",
-  },
-};
+function applyView() {
+  const definition = SCENARIOS[scenario];
+  $("[data-view='micro']").innerHTML =
+    `<span>Micro</span>${scenario === "incident" ? "One block" : "One junction"}`;
+  aView.setView(view, definition.microFocus, scenario);
+  bView.setView(view, definition.microFocus, scenario);
+  document
+    .querySelectorAll<HTMLButtonElement>("[data-view]")
+    .forEach((button) => {
+      const selected = button.dataset.view === view;
+      button.classList.toggle("selected", selected);
+      button.setAttribute("aria-pressed", String(selected));
+    });
+  $(".experiment").dataset.view = view;
+  $("#view-note").textContent =
+    view === "micro"
+      ? "The same run, up close"
+      : "All nine junctions · the same run";
+  $("#story-kicker").textContent =
+    `${view.toUpperCase()} / ${definition.location}`;
+  $("#story-title").textContent =
+    view === "micro"
+      ? scenario === "incident"
+        ? "What to watch on this block"
+        : "What to watch at this junction"
+      : "What to watch across town";
+  $("#story-body").textContent = definition[view].watchFor;
+  $<HTMLCanvasElement>("#isolated-city").setAttribute(
+    "aria-label",
+    `${view === "micro" ? "Close-up" : "Network view"} of ${definition.location} with fixed traffic lights`,
+  );
+  $<HTMLCanvasElement>("#connected-city").setAttribute(
+    "aria-label",
+    `${view === "micro" ? "Close-up" : "Network view"} of ${definition.location} with participating adaptive traffic lights`,
+  );
+}
+
+function updateScene() {
+  const definition = SCENARIOS[scenario];
+  $("#scenario-location").textContent = definition.location;
+  $("#scenario-title").textContent = definition.title;
+  $("#scenario-setup").textContent = definition.setup;
+  $("#scene-replay").innerHTML =
+    `${scenario === "school" ? "Replay the crossing" : scenario === "incident" ? "Replay the slowdown" : "Replay this junction"} ${icon("reset")}`;
+  applyView();
+}
 
 function updateLabels() {
   $("#adoption-value").textContent = `${adoption.value}%`;
@@ -116,8 +148,9 @@ function reset() {
   };
   a = new TrafficSimulation({ ...config, mode: "isolated" });
   b = new TrafficSimulation({ ...config, mode: "connected" });
-  // Same three-minute startup period for every comparison, including slider changes.
-  for (let i = 0; i < 1800; i++) {
+  // Both engines replay the same travelers up to the scenario’s starting point.
+  accumulator = 0;
+  for (let i = 0; i < SCENARIOS[scenario].startSeconds * 10; i++) {
     a.step(0.1);
     b.step(0.1);
   }
@@ -136,12 +169,132 @@ function setScenario(value: Scenario) {
       btn.classList.toggle("selected", selected);
       btn.setAttribute("aria-pressed", String(selected));
     });
-  const story = stories[value];
-  $("#story-kicker").textContent = story.kicker;
-  $("#story-title").textContent = story.title;
-  $("#story-body").textContent = story.body;
+  updateScene();
   reset();
 }
+
+function updateDetails() {
+  const inspections = [inspectScenario(aState), inspectScenario(bState)];
+  for (const [index, prefix] of ["a", "b"].entries()) {
+    const detail = inspections[index];
+    const state = index === 0 ? aState : bState;
+    const node = detail.intersection;
+    const streets = detail.definition.streets;
+    const green = node.pedestrian
+      ? "All stopped"
+      : node.state === "clearance"
+        ? "All red"
+        : node.state === "EW"
+          ? streets.horizontal.replace(" Street", "")
+          : streets.vertical.replace(" Avenue", "");
+    const report =
+      index === 0
+        ? "Off"
+        : !node.connected
+          ? "Unequipped"
+          : node.fresh
+            ? "Fresh"
+            : "None";
+    const labels =
+      view === "micro"
+        ? [
+            scenario === "incident" ? "Waiting at Oak" : "Approach queue",
+            node.pedestrian || node.state === "clearance"
+              ? "Signal state"
+              : "Green for",
+            "Shared reports",
+          ]
+        : ["Outside queue", "Full lanes", "Queued junctions"];
+    const values =
+      view === "micro"
+        ? [detail.focusQueue, green, report]
+        : [
+            state.metrics.waitingOutside,
+            detail.network.fullRoads,
+            `${detail.network.queuedIntersections} / 9`,
+          ];
+    labels.forEach((label, i) => {
+      $(`#${prefix}-local-label-${i + 1}`).textContent = label;
+      $(`#${prefix}-local-${i + 1}`).textContent = String(values[i]);
+      $(`#${prefix}-local-${i + 1}`).classList.toggle(
+        "word-stat",
+        typeof values[i] === "string",
+      );
+    });
+    $(`#${prefix}-live`).textContent =
+      view === "macro"
+        ? `${state.metrics.queue} cars waiting across the network, including its entrances.`
+        : localState(detail);
+    $(`#${prefix}-explanation`).textContent =
+      detail.definition[view][index === 0 ? "isolated" : "connected"];
+  }
+  const detail = inspections[1];
+  $("#b-mode-label").textContent =
+    view === "macro"
+      ? `${bState.intersections.filter((n) => n.connected && n.fresh).length} / 9 ADAPTIVE`
+      : !detail.intersection.connected
+        ? "UNEQUIPPED"
+        : detail.intersection.fresh
+          ? "ADAPTIVE SIGNAL"
+          : "FIXED FALLBACK";
+  const crossing = detail.protectedCrossing;
+  const restriction = detail.restriction;
+  const event = $("#scenario-event");
+  event.dataset.state =
+    crossing?.active || restriction?.active ? "active" : "waiting";
+  event.textContent = crossing
+    ? crossing.active
+      ? `Crossing active · ${crossing.remainingSeconds.toFixed(1)} s left`
+      : `Next crossing in ${crossing.nextInSeconds.toFixed(1)} s`
+    : restriction
+      ? restriction.active
+        ? "Eastbound lane limited to 10 km/h"
+        : `Lane slows in ${restriction.startsInSeconds.toFixed(1)} s`
+      : "More traffic arrives from the east and west";
+}
+
+function localState(detail: ScenarioInspection) {
+  if (detail.protectedCrossing?.active)
+    return "People are crossing. All vehicle approaches are stopped.";
+  if (detail.intersection.state === "clearance")
+    return "All red while the light changes direction.";
+  const street =
+    detail.intersection.state === "EW"
+      ? detail.definition.streets.horizontal
+      : detail.definition.streets.vertical;
+  return `${street} has green. ${detail.focusQueue} cars are waiting on the approaches.`;
+}
+
+function advanceRun() {
+  // An explicit jump runs the same physical model, retaining both modes and controls.
+  a.step(180);
+  b.step(180);
+  aState = a.getSnapshot();
+  bState = b.getSnapshot();
+  accumulator = 0;
+  render();
+  updateMetrics();
+}
+
+document
+  .querySelectorAll<HTMLButtonElement>("[data-view]")
+  .forEach((button) => {
+    button.addEventListener("click", () => {
+      view = button.dataset.view as "micro" | "macro";
+      applyView();
+      render();
+      updateMetrics();
+    });
+  });
+$("#scene-replay").addEventListener("click", () => {
+  view = "micro";
+  applyView();
+  reset();
+  if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches)
+    paused = false;
+  updatePause();
+});
+$("#advance").addEventListener("click", advanceRun);
 
 function updateMetrics() {
   for (const [prefix, state] of [
@@ -169,6 +322,7 @@ function updateMetrics() {
         : "more delay per finished trip"
     : "collecting completed trips";
   $("#outcome-number").classList.toggle("worse", diff < 0);
+  updateDetails();
   const secs = Math.floor(aState.time);
   $("#sim-time").textContent =
     `${String(Math.floor(secs / 60)).padStart(2, "0")}:${String(secs % 60).padStart(2, "0")}`;
@@ -188,6 +342,7 @@ function updatePause() {
 $("#pause").addEventListener("click", () => {
   paused = !paused;
   updatePause();
+  updateMetrics();
 });
 updatePause();
 $("#reset").addEventListener("click", reset);
@@ -200,7 +355,7 @@ $("#network-toggle").addEventListener("click", () => {
   render();
 });
 $("#speed").addEventListener("click", () => {
-  speed = speed === 6 ? 12 : speed === 12 ? 1 : 6;
+  speed = speed === 1 ? 3 : speed === 3 ? 6 : 1;
   $("#speed").textContent = `Time: ${speed}×`;
 });
 for (const input of [adoption, demand, loss]) {
@@ -218,11 +373,9 @@ $("#capacity-test").addEventListener("click", () => {
   adoption.value = "100";
   demand.value = "200";
   loss.value = "0";
+  view = "macro";
   setScenario("rush");
-  $("#story-kicker").textContent = "04 / TWICE THE DEMAND";
-  $("#story-title").textContent = "Can the network handle twice the traffic?";
-  $("#story-body").textContent =
-    "Every signal is connected, messages get through, and demand is twice the starting level. Watch the queues as the run continues. More information can help, but it doesn’t add road space.";
+  advanceRun();
   $("#lab").scrollIntoView({ behavior: "smooth", block: "start" });
 });
 const dialog = $<HTMLDialogElement>("#model-dialog");
@@ -321,10 +474,10 @@ document
   );
 setParticipant("vehicle");
 
+updateScene();
 reset();
 let last = performance.now(),
-  metricClock = 0,
-  accumulator = 0;
+  metricClock = 0;
 function frame(now: number) {
   const elapsed = Math.min((now - last) / 1000, 0.1);
   last = now;
@@ -371,6 +524,7 @@ if (modelContext?.registerTool) {
   const lifecycle = new AbortController();
   const read = () => ({
     scenario,
+    view,
     adoption: Number(adoption.value) / 100,
     demand: Number(demand.value) / 100,
     packetLoss: Number(loss.value) / 100,

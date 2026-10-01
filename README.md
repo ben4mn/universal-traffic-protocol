@@ -10,7 +10,8 @@ The idea began with Ben at age seven. This first public version turns that quest
 
 ## What is here
 
-- A public, responsive storytelling simulation: matched city networks, live traffic, mixed adoption, traffic demand, packet loss, rush hour, a protected crossing, and a blocked road.
+- A public, responsive simulation with two views of the same run: a close-up of one junction and a wider view of the nine-junction network. Specific examples follow a morning commute, a nine-second school crossing, and an eastbound lane slowed by roadworks.
+- Replay each scene just before its event, watch local queues and signals, then switch to the network view or advance three minutes to inspect the wider effect. Adoption, traffic demand, and packet loss remain adjustable.
 - A v0.1 protocol draft with seven typed message profiles, explicit units and uncertainty, freshness and replay rules, trust boundaries, privacy principles, capability negotiation, and fallback behavior.
 - JSON Schema and simulation fixtures, plus a reference receiver guard that tests structure and message acceptance in simulation or laboratory contexts.
 - A [standards map](docs/standards.md) relating the proposal to existing SAE and ETSI work, with primary sources and translation caveats.
@@ -46,16 +47,17 @@ The frontend uses TypeScript and Canvas with Vite. There is no backend, account,
 
 ## Project map
 
-| Location               | Purpose                                              |
-| ---------------------- | ---------------------------------------------------- |
-| `src/main.ts`          | Page, experiment controls, message explorer          |
-| `src/city.ts`          | Isometric view of model roads, vehicles, and signals |
-| `src/simulation.ts`    | Deterministic traffic model                          |
-| `src/protocol.ts`      | Experimental message receiver and acceptance checks  |
-| `protocol/schema.json` | Draft 2020-12 reference message schema               |
-| `protocol/examples/`   | Synthetic fixtures for all message profiles          |
-| `docs/`                | Specification, sources, model, research questions    |
-| `tests/`               | Message validation and model invariants              |
+| Location               | Purpose                                                         |
+| ---------------------- | --------------------------------------------------------------- |
+| `src/main.ts`          | Page, experiment controls, message explorer                     |
+| `src/city.ts`          | Close-up and isometric network views of live model state        |
+| `src/scenarios.ts`     | Named scenarios, camera framing, and live local/network details |
+| `src/simulation.ts`    | Deterministic traffic model                                     |
+| `src/protocol.ts`      | Experimental message receiver and acceptance checks             |
+| `protocol/schema.json` | Draft 2020-12 reference message schema                          |
+| `protocol/examples/`   | Synthetic fixtures for all message profiles                     |
+| `docs/`                | Specification, sources, model, research questions               |
+| `tests/`               | Message validation and model invariants                         |
 
 ## Contributing
 
