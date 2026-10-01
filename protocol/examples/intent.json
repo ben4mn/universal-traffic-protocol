@@ -1,0 +1,49 @@
+{
+  "utp": "0.1",
+  "type": "intent",
+  "message_id": "sim-intent-000001",
+  "sender": {
+    "session_id": "sim-car-07",
+    "kind": "vehicle"
+  },
+  "sequence": 1,
+  "sent_at_ms": 1790856000000,
+  "ttl_ms": 2000,
+  "clock_uncertainty_ms": 5,
+  "scope": {
+    "center": {
+      "lat": 41.881,
+      "lon": -87.629,
+      "horizontal_uncertainty_m": 0.5
+    },
+    "radius_m": 250
+  },
+  "security": {
+    "binding": "simulation"
+  },
+  "body": {
+    "plan_id": "sim-plan-000001",
+    "maneuver": "yield",
+    "horizon_ms": 2000,
+    "trajectory": [
+      {
+        "offset_ms": 0,
+        "position": {
+          "lat": 41.881,
+          "lon": -87.629,
+          "horizontal_uncertainty_m": 0.5
+        },
+        "speed_mps": 8.5
+      },
+      {
+        "offset_ms": 2000,
+        "position": {
+          "lat": 41.881,
+          "lon": -87.62892,
+          "horizontal_uncertainty_m": 1.5
+        },
+        "speed_mps": 0
+      }
+    ]
+  }
+}

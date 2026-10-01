@@ -1,0 +1,41 @@
+{
+  "utp": "0.1",
+  "type": "observation",
+  "message_id": "sim-observation-000001",
+  "sender": {
+    "session_id": "sim-sensor-01",
+    "kind": "sensor"
+  },
+  "sequence": 1,
+  "sent_at_ms": 1790856000000,
+  "ttl_ms": 1000,
+  "clock_uncertainty_ms": 5,
+  "scope": {
+    "center": {
+      "lat": 41.881,
+      "lon": -87.629,
+      "horizontal_uncertainty_m": 0.5
+    },
+    "radius_m": 250
+  },
+  "security": {
+    "binding": "simulation"
+  },
+  "body": {
+    "observed_at_ms": 1790855999980,
+    "subject_id": "sim-object-12",
+    "category": "pedestrian",
+    "position": {
+      "lat": 41.88102,
+      "lon": -87.62903,
+      "horizontal_uncertainty_m": 1.2
+    },
+    "status": "detected",
+    "confidence": null,
+    "map_ref": {
+      "namespace": "utp.demo",
+      "map_id": "intersection-01",
+      "revision": "1"
+    }
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "utp": "0.1",
+  "type": "infrastructure_state",
+  "message_id": "sim-crosswalk-000001",
+  "sender": {
+    "session_id": "sim-city-01",
+    "kind": "infrastructure"
+  },
+  "sequence": 1,
+  "sent_at_ms": 1790856000000,
+  "ttl_ms": 1000,
+  "clock_uncertainty_ms": 5,
+  "scope": {
+    "center": {
+      "lat": 41.881,
+      "lon": -87.629,
+      "horizontal_uncertainty_m": 0.5
+    },
+    "radius_m": 250
+  },
+  "security": {
+    "binding": "simulation"
+  },
+  "body": {
+    "resource_id": "crosswalk-001",
+    "map_ref": {
+      "namespace": "utp.demo",
+      "map_id": "intersection-01",
+      "revision": "1"
+    },
+    "authority_claim": "observer",
+    "state": {
+      "kind": "crosswalk",
+      "occupancy": "occupied"
+    },
+    "observed_at_ms": 1790856000000
+  }
+}

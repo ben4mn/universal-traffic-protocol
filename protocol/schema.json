@@ -1,0 +1,1261 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:utp:0.1:schema",
+  "title": "Universal Traffic Protocol v0.1 laboratory envelope",
+  "description": "Research-only JSON profile. Schema validation does not verify security, timestamps, replay state, geometry, or application safety. See docs/protocol.md.",
+  "type": "object",
+  "properties": {
+    "utp": {
+      "const": "0.1"
+    },
+    "type": {
+      "enum": [
+        "presence",
+        "observation",
+        "intent",
+        "infrastructure_state",
+        "coordination_offer",
+        "coordination_ack",
+        "capabilities"
+      ]
+    },
+    "message_id": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9._:-]+$"
+    },
+    "sender": {
+      "type": "object",
+      "properties": {
+        "session_id": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$"
+        },
+        "kind": {
+          "enum": [
+            "vehicle",
+            "infrastructure",
+            "sensor",
+            "service"
+          ]
+        }
+      },
+      "required": [
+        "session_id",
+        "kind"
+      ],
+      "additionalProperties": false
+    },
+    "sequence": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "sent_at_ms": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "ttl_ms": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 60000
+    },
+    "clock_uncertainty_ms": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 60000
+    },
+    "scope": {
+      "type": "object",
+      "properties": {
+        "center": {
+          "$ref": "#/$defs/position"
+        },
+        "radius_m": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 10000
+        }
+      },
+      "required": [
+        "center",
+        "radius_m"
+      ],
+      "additionalProperties": false
+    },
+    "security": {
+      "type": "object",
+      "properties": {
+        "binding": {
+          "enum": [
+            "simulation",
+            "external"
+          ]
+        },
+        "credential_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "standard": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        }
+      },
+      "required": [
+        "binding"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "binding": {
+                "const": "external"
+              }
+            },
+            "required": [
+              "binding"
+            ],
+            "type": "object"
+          },
+          "then": {
+            "required": [
+              "credential_ref",
+              "standard"
+            ],
+            "type": "object",
+            "properties": {
+              "credential_ref": {},
+              "standard": {}
+            }
+          },
+          "else": {
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "credential_ref"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "credential_ref": {}
+                  }
+                },
+                {
+                  "required": [
+                    "standard"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "standard": {}
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "origin": {
+      "type": "object",
+      "properties": {
+        "format": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "edition": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "source_message_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        }
+      },
+      "required": [
+        "format",
+        "edition",
+        "source_message_id"
+      ],
+      "additionalProperties": false
+    },
+    "body": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "utp",
+    "type",
+    "message_id",
+    "sender",
+    "sequence",
+    "sent_at_ms",
+    "ttl_ms",
+    "clock_uncertainty_ms",
+    "scope",
+    "security",
+    "body"
+  ],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "presence"
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "type": "object"
+      },
+      "then": {
+        "properties": {
+          "body": {
+            "$ref": "#/$defs/presence"
+          },
+          "ttl_ms": {
+            "maximum": 1000,
+            "type": "number"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "observation"
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "type": "object"
+      },
+      "then": {
+        "properties": {
+          "body": {
+            "$ref": "#/$defs/observation"
+          },
+          "ttl_ms": {
+            "maximum": 1000,
+            "type": "number"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "intent"
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "type": "object"
+      },
+      "then": {
+        "properties": {
+          "body": {
+            "$ref": "#/$defs/intent"
+          },
+          "ttl_ms": {
+            "maximum": 2000,
+            "type": "number"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "infrastructure_state"
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "type": "object"
+      },
+      "then": {
+        "properties": {
+          "body": {
+            "$ref": "#/$defs/infrastructure_state"
+          },
+          "ttl_ms": {
+            "maximum": 60000,
+            "type": "number"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "coordination_offer"
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "type": "object"
+      },
+      "then": {
+        "properties": {
+          "body": {
+            "$ref": "#/$defs/coordination_offer"
+          },
+          "ttl_ms": {
+            "maximum": 2000,
+            "type": "number"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "coordination_ack"
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "type": "object"
+      },
+      "then": {
+        "properties": {
+          "body": {
+            "$ref": "#/$defs/coordination_ack"
+          },
+          "ttl_ms": {
+            "maximum": 2000,
+            "type": "number"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "capabilities"
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "type": "object"
+      },
+      "then": {
+        "properties": {
+          "body": {
+            "$ref": "#/$defs/capabilities"
+          },
+          "ttl_ms": {
+            "maximum": 60000,
+            "type": "number"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "infrastructure_state"
+          },
+          "body": {
+            "properties": {
+              "state": {
+                "properties": {
+                  "kind": {
+                    "const": "signal"
+                  }
+                },
+                "required": [
+                  "kind"
+                ],
+                "type": "object"
+              }
+            },
+            "required": [
+              "state"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "type",
+          "body"
+        ],
+        "type": "object"
+      },
+      "then": {
+        "properties": {
+          "ttl_ms": {
+            "maximum": 1000,
+            "type": "number"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "infrastructure_state"
+          },
+          "body": {
+            "properties": {
+              "state": {
+                "properties": {
+                  "kind": {
+                    "const": "crosswalk"
+                  }
+                },
+                "required": [
+                  "kind"
+                ],
+                "type": "object"
+              }
+            },
+            "required": [
+              "state"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "type",
+          "body"
+        ],
+        "type": "object"
+      },
+      "then": {
+        "properties": {
+          "ttl_ms": {
+            "maximum": 1000,
+            "type": "number"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "infrastructure_state"
+          },
+          "body": {
+            "properties": {
+              "state": {
+                "properties": {
+                  "kind": {
+                    "const": "parking"
+                  }
+                },
+                "required": [
+                  "kind"
+                ],
+                "type": "object"
+              }
+            },
+            "required": [
+              "state"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "type",
+          "body"
+        ],
+        "type": "object"
+      },
+      "then": {
+        "properties": {
+          "ttl_ms": {
+            "maximum": 10000,
+            "type": "number"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "infrastructure_state"
+          },
+          "body": {
+            "properties": {
+              "state": {
+                "properties": {
+                  "kind": {
+                    "const": "closure"
+                  }
+                },
+                "required": [
+                  "kind"
+                ],
+                "type": "object"
+              }
+            },
+            "required": [
+              "state"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "type",
+          "body"
+        ],
+        "type": "object"
+      },
+      "then": {
+        "properties": {
+          "ttl_ms": {
+            "maximum": 10000,
+            "type": "number"
+          }
+        },
+        "type": "object"
+      }
+    }
+  ],
+  "$defs": {
+    "position": {
+      "type": "object",
+      "properties": {
+        "lat": {
+          "type": "number",
+          "minimum": -90,
+          "maximum": 90
+        },
+        "lon": {
+          "type": "number",
+          "minimum": -180,
+          "maximum": 180
+        },
+        "horizontal_uncertainty_m": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "alt_m": {
+          "type": "number",
+          "minimum": -1000,
+          "maximum": 100000
+        },
+        "vertical_uncertainty_m": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 10000
+        }
+      },
+      "required": [
+        "lat",
+        "lon",
+        "horizontal_uncertainty_m"
+      ],
+      "additionalProperties": false,
+      "dependentRequired": {
+        "alt_m": [
+          "vertical_uncertainty_m"
+        ],
+        "vertical_uncertainty_m": [
+          "alt_m"
+        ]
+      }
+    },
+    "map_ref": {
+      "type": "object",
+      "properties": {
+        "namespace": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "map_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "revision": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "lane_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        }
+      },
+      "required": [
+        "namespace",
+        "map_id",
+        "revision"
+      ],
+      "additionalProperties": false
+    },
+    "presence": {
+      "type": "object",
+      "properties": {
+        "position": {
+          "$ref": "#/$defs/position"
+        },
+        "speed_mps": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "speed_uncertainty_mps": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "heading_deg": {
+          "type": "number",
+          "minimum": 0,
+          "exclusiveMaximum": 360
+        },
+        "heading_uncertainty_deg": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 180
+        },
+        "length_m": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 100
+        },
+        "width_m": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 20
+        },
+        "automation": {
+          "enum": [
+            "manual",
+            "assisted",
+            "automated"
+          ]
+        },
+        "map_ref": {
+          "$ref": "#/$defs/map_ref"
+        }
+      },
+      "required": [
+        "position",
+        "speed_mps",
+        "speed_uncertainty_mps",
+        "heading_deg",
+        "heading_uncertainty_deg",
+        "length_m",
+        "width_m"
+      ],
+      "additionalProperties": false
+    },
+    "observation": {
+      "type": "object",
+      "properties": {
+        "observed_at_ms": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "subject_id": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$"
+        },
+        "category": {
+          "enum": [
+            "vehicle",
+            "pedestrian",
+            "cyclist",
+            "obstacle",
+            "queue",
+            "parking_space"
+          ]
+        },
+        "position": {
+          "$ref": "#/$defs/position"
+        },
+        "status": {
+          "enum": [
+            "detected",
+            "occupied",
+            "available",
+            "blocked",
+            "unknown"
+          ]
+        },
+        "confidence": {
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "speed_mps": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "speed_uncertainty_mps": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "map_ref": {
+          "$ref": "#/$defs/map_ref"
+        }
+      },
+      "required": [
+        "observed_at_ms",
+        "subject_id",
+        "category",
+        "position",
+        "status",
+        "confidence"
+      ],
+      "additionalProperties": false,
+      "dependentRequired": {
+        "speed_mps": [
+          "speed_uncertainty_mps"
+        ],
+        "speed_uncertainty_mps": [
+          "speed_mps"
+        ]
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "category": {
+                "const": "parking_space"
+              }
+            },
+            "required": [
+              "category"
+            ],
+            "type": "object"
+          },
+          "then": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "occupied",
+                  "available",
+                  "unknown"
+                ]
+              }
+            },
+            "type": "object"
+          },
+          "else": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "detected",
+                  "blocked",
+                  "unknown"
+                ]
+              }
+            },
+            "type": "object"
+          }
+        }
+      ]
+    },
+    "intent": {
+      "type": "object",
+      "properties": {
+        "plan_id": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$"
+        },
+        "maneuver": {
+          "enum": [
+            "maintain",
+            "slow",
+            "stop",
+            "turn_left",
+            "turn_right",
+            "merge",
+            "yield"
+          ]
+        },
+        "horizon_ms": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        },
+        "trajectory": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "offset_ms": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 10000
+              },
+              "position": {
+                "$ref": "#/$defs/position"
+              },
+              "speed_mps": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 100
+              }
+            },
+            "required": [
+              "offset_ms",
+              "position",
+              "speed_mps"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 2,
+          "maxItems": 32
+        }
+      },
+      "required": [
+        "plan_id",
+        "maneuver",
+        "horizon_ms",
+        "trajectory"
+      ],
+      "additionalProperties": false
+    },
+    "infrastructure_state": {
+      "type": "object",
+      "properties": {
+        "resource_id": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$"
+        },
+        "map_ref": {
+          "$ref": "#/$defs/map_ref"
+        },
+        "authority_claim": {
+          "enum": [
+            "controller",
+            "observer"
+          ]
+        },
+        "state": {
+          "oneOf": [
+            {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "const": "signal"
+                },
+                "signal_group_id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128
+                },
+                "phase": {
+                  "enum": [
+                    "stop",
+                    "caution",
+                    "go",
+                    "unknown"
+                  ]
+                },
+                "min_end_ms": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "max_end_ms": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "kind",
+                "signal_group_id",
+                "phase"
+              ],
+              "additionalProperties": false,
+              "dependentRequired": {
+                "min_end_ms": [
+                  "max_end_ms"
+                ],
+                "max_end_ms": [
+                  "min_end_ms"
+                ]
+              }
+            },
+            {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "const": "stop_sign"
+                },
+                "rule": {
+                  "const": "stop"
+                }
+              },
+              "required": [
+                "kind",
+                "rule"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "const": "parking"
+                },
+                "capacity": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1000000
+                },
+                "occupied": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1000000
+                }
+              },
+              "required": [
+                "kind",
+                "capacity",
+                "occupied"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "const": "crosswalk"
+                },
+                "occupancy": {
+                  "enum": [
+                    "occupied",
+                    "clear",
+                    "unknown"
+                  ]
+                }
+              },
+              "required": [
+                "kind",
+                "occupancy"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "const": "closure"
+                },
+                "status": {
+                  "enum": [
+                    "open",
+                    "closed",
+                    "unknown"
+                  ]
+                }
+              },
+              "required": [
+                "kind",
+                "status"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "observed_at_ms": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "resource_id",
+        "map_ref",
+        "observed_at_ms",
+        "authority_claim",
+        "state"
+      ],
+      "additionalProperties": false
+    },
+    "coordination_offer": {
+      "type": "object",
+      "properties": {
+        "offer_id": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$"
+        },
+        "resource_id": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$"
+        },
+        "map_ref": {
+          "$ref": "#/$defs/map_ref"
+        },
+        "participants": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9._:-]+$"
+          },
+          "minItems": 2,
+          "maxItems": 8,
+          "uniqueItems": true
+        },
+        "valid_from_ms": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "valid_until_ms": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "slots": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "participant": {
+                "type": "string",
+                "minLength": 8,
+                "maxLength": 128,
+                "pattern": "^[A-Za-z0-9._:-]+$"
+              },
+              "enter_after_ms": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "exit_before_ms": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "participant",
+              "enter_after_ms",
+              "exit_before_ms"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 2,
+          "maxItems": 8
+        }
+      },
+      "required": [
+        "offer_id",
+        "resource_id",
+        "map_ref",
+        "participants",
+        "valid_from_ms",
+        "valid_until_ms",
+        "slots"
+      ],
+      "additionalProperties": false
+    },
+    "coordination_ack": {
+      "type": "object",
+      "properties": {
+        "offer_id": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$"
+        },
+        "offer_message_id": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$"
+        },
+        "decision": {
+          "enum": [
+            "accepted",
+            "declined",
+            "cancelled"
+          ]
+        },
+        "reason": {
+          "enum": [
+            "willing",
+            "conflict",
+            "unsupported",
+            "uncertain",
+            "expired",
+            "local_override",
+            "other"
+          ]
+        },
+        "offer_sender_session_id": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$"
+        }
+      },
+      "required": [
+        "offer_id",
+        "offer_sender_session_id",
+        "offer_message_id",
+        "decision",
+        "reason"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "decision": {
+                "const": "accepted"
+              }
+            },
+            "required": [
+              "decision"
+            ],
+            "type": "object"
+          },
+          "then": {
+            "properties": {
+              "reason": {
+                "const": "willing"
+              }
+            },
+            "type": "object"
+          },
+          "else": {
+            "properties": {
+              "reason": {
+                "not": {
+                  "const": "willing"
+                }
+              }
+            },
+            "type": "object"
+          }
+        }
+      ]
+    },
+    "capabilities": {
+      "type": "object",
+      "properties": {
+        "supported_versions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[0-9]+\\.[0-9]+$",
+            "maxLength": 16
+          },
+          "minItems": 1,
+          "maxItems": 8,
+          "uniqueItems": true
+        },
+        "supported_profiles": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "presence",
+              "observation",
+              "intent",
+              "infrastructure_state",
+              "coordination_offer",
+              "coordination_ack",
+              "capabilities"
+            ]
+          },
+          "minItems": 1,
+          "maxItems": 7,
+          "uniqueItems": true
+        },
+        "max_message_bytes": {
+          "type": "integer",
+          "minimum": 256,
+          "maximum": 32768
+        },
+        "operating_mode": {
+          "enum": [
+            "simulation",
+            "laboratory"
+          ]
+        },
+        "adapters": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "minItems": 0,
+          "maxItems": 16,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "supported_versions",
+        "supported_profiles",
+        "max_message_bytes",
+        "operating_mode"
+      ],
+      "additionalProperties": false
+    }
+  }
+}
