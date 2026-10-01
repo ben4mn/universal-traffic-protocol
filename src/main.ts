@@ -80,12 +80,12 @@ const adoption = $<HTMLInputElement>("#adoption"),
   loss = $<HTMLInputElement>("#loss");
 function applyView() {
   const definition = SCENARIOS[scenario];
-  $("[data-view='micro']").innerHTML =
+  $("button[data-view='micro']").innerHTML =
     `<span>Micro</span>${scenario === "incident" ? "One block" : "One junction"}`;
   aView.setView(view, definition.microFocus, scenario);
   bView.setView(view, definition.microFocus, scenario);
   document
-    .querySelectorAll<HTMLButtonElement>("[data-view]")
+    .querySelectorAll<HTMLButtonElement>("button[data-view]")
     .forEach((button) => {
       const selected = button.dataset.view === view;
       button.classList.toggle("selected", selected);
@@ -277,7 +277,7 @@ function advanceRun() {
 }
 
 document
-  .querySelectorAll<HTMLButtonElement>("[data-view]")
+  .querySelectorAll<HTMLButtonElement>("button[data-view]")
   .forEach((button) => {
     button.addEventListener("click", () => {
       view = button.dataset.view as "micro" | "macro";
