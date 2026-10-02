@@ -1,0 +1,24 @@
+.cascade-evidence { padding: 48px 0 54px; border-bottom: 1px solid var(--line); }
+.cascade-answer { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 60px; }
+.cascade-answer .eyebrow { grid-column: 1 / -1; color: #708545; }
+.cascade-answer h2 { font-size: clamp(28px, 3vw, 40px); letter-spacing: -.045em; line-height: 1.15; }
+.cascade-answer > p:last-child { color: var(--muted); font-size: 16px; line-height: 1.7; }
+.cascade-findings { display: grid; grid-template-columns: repeat(3, 1fr); gap: 34px; margin-top: 36px; }
+.cascade-findings article { border-top: 1px solid #b7c3a6; padding-top: 20px; }
+.cascade-ref { font: 10px monospace; letter-spacing: .05em; color: #718348; }
+.cascade-findings h3 { margin-top: 13px; font-size: 21px; letter-spacing: -.025em; line-height: 1.25; }
+.cascade-findings p { margin-top: 12px; font-size: 14px; line-height: 1.75; color: var(--muted); }
+.cascade-findings a, .cascade-conclusion a { display: inline-block; margin-top: 17px; font-size: 12px; color: #53683d; }
+.capacity-proof { display: grid; grid-template-columns: 1.4fr 1fr; gap: 54px; padding: 28px; margin-top: 34px; border: 1px solid #cdd7c0; border-radius: 12px; background: #e8eedf; }
+.capacity-proof h3 { margin-top: 13px; font-size: 24px; line-height: 1.25; letter-spacing: -.035em; }
+.capacity-proof p { margin-top: 13px; color: #59674d; font-size: 14px; line-height: 1.7; }
+.capacity-arithmetic { display: flex; flex-direction: column; gap: 12px; font: 25px "Space Grotesk", sans-serif; font-variant-numeric: tabular-nums; }
+.capacity-arithmetic span, .capacity-arithmetic strong { display: flex; justify-content: space-between; gap: 16px; align-items: center; font-weight: 500; }
+.capacity-arithmetic small { font: 11px "DM Sans", sans-serif; color: #6d785e; text-align: right; }
+.capacity-arithmetic strong { border-top: 1px solid #b5c3a1; padding-top: 15px; color: #6b582e; }
+.cascade-conclusion { max-width: 830px; margin-top: 28px; font-size: 15px; line-height: 1.7; color: var(--muted); }
+.cascade-conclusion p + p { margin-top: 12px; font-size: 13px; }
+.cascade-conclusion .inline-evidence-link { display: inline; margin: 0; font-size: inherit; }
+.cascade-conclusion strong { color: var(--ink); font-weight: 600; }
+@media(max-width:800px) { .cascade-answer { grid-template-columns: 1fr; gap: 15px; }.cascade-findings { gap: 20px; }.cascade-findings h3 { font-size: 18px; }.capacity-proof { gap: 25px; padding: 22px; }.capacity-proof h3 { font-size: 21px; } }
+@media(max-width:580px) { .cascade-evidence { padding-top: 32px; }.cascade-findings { grid-template-columns: 1fr; gap: 26px; margin-top: 26px; }.cascade-findings h3 { font-size: 21px; }.capacity-proof { grid-template-columns: 1fr; padding: 21px; }.capacity-arithmetic { font-size: 28px; }.cascade-answer > p:last-child { font-size: 15px; }.site-header nav { gap: 13px; }.site-header nav > a[href="#protocol"] { display: none; } }

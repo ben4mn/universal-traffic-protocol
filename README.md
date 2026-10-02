@@ -12,10 +12,12 @@ The idea began with Ben at age seven. This first public version turns that quest
 
 - A public, responsive simulation with two views of the same run: a close-up of one junction and a wider view of the nine-junction network. Specific examples follow a morning commute, a nine-second school crossing, and an eastbound lane slowed by roadworks.
 - Replay each scene just before its event, watch local queues and signals, then switch to the network view or advance three minutes to inspect the wider effect. Adoption, traffic demand, and packet loss remain adjustable.
+- An autonomous-junction experiment schedules the same 24 stopped vehicles using either exclusive or compatible overlapping movements. Try three right turns, crossing paths, mixed turns, larger buffers, incomplete communication and a protected pedestrian window.
+- A larger city and freeway experiment tests whether queues spread after a temporary restriction, under steady demand, and when demand exceeds exit capacity. It compares local responsive control with shared downstream information, counting waits on ramps and outside the map.
 - A v0.1 protocol draft with seven typed message profiles, explicit units and uncertainty, freshness and replay rules, trust boundaries, privacy principles, capability negotiation, and fallback behavior.
 - JSON Schema and simulation fixtures, plus a reference receiver guard that tests structure and message acceptance in simulation or laboratory contexts.
 - A [standards map](docs/standards.md) relating the proposal to existing SAE and ETSI work, with primary sources and translation caveats.
-- Reproducible [model assumptions](docs/simulation.md) and a [research agenda](docs/research-agenda.md).
+- Reproducible [small-city](docs/simulation.md), [regional](docs/regional-model.md) and [junction](docs/autonomous-junction.md) assumptions, [published regional sweeps](docs/regional-results.md), a [research agenda](docs/research-agenda.md), and an [evidence review of congestion cascades](docs/cascades.md).
 
 The site is a running experiment. Displayed savings come from simulated vehicle movement and signal decisions, not a preset percentage. Both modes receive the same requested travelers and random seed. Queues include travelers waiting to enter a full network. Average delay covers completed trips, so it must be read alongside queues and completions.
 
@@ -41,6 +43,7 @@ Open the URL printed by Vite, including `/universal-traffic-protocol/`.
 ```sh
 npm run check  # protocol/model tests, TypeScript, production build
 npm run preview
+npm run benchmark:regional # matched demand, adoption, outage and route sweeps
 ```
 
 The frontend uses TypeScript and Canvas with Vite. There is no backend, account, tracking, or API key. Google Fonts is optional; local font fallbacks keep the site usable if it is unavailable. When a browser supports the optional WebMCP interface, the page exposes the same read and configuration operations as its visible experiment controls.
@@ -53,6 +56,12 @@ The frontend uses TypeScript and Canvas with Vite. There is no backend, account,
 | `src/city.ts`          | Close-up and isometric network views of live model state        |
 | `src/scenarios.ts`     | Named scenarios, camera framing, and live local/network details |
 | `src/simulation.ts`    | Deterministic traffic model                                     |
+| `src/regional.ts`      | Larger finite-storage city/freeway flow model                   |
+| `src/regional-view.ts` | Paired regional maps, replay, measurements, and seed comparisons |
+| `src/junction.ts`      | Buffered space/time scheduling after a required full stop       |
+| `src/junction-view.ts` | Close-up autonomous junction comparison and controls            |
+| `src/cascade-evidence.ts` | Field evidence and the demand/capacity counterexample         |
+| `scripts/regional-benchmark.ts` | Reproducible paired sweeps and interruption counterfactuals |
 | `src/protocol.ts`      | Experimental message receiver and acceptance checks             |
 | `protocol/schema.json` | Draft 2020-12 reference message schema                          |
 | `protocol/examples/`   | Synthetic fixtures for all message profiles                     |

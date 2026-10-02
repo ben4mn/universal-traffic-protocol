@@ -7,6 +7,9 @@ import {
 import { CityView } from "./city";
 import { SCENARIOS, inspectScenario } from "./scenarios";
 import type { ScenarioInspection } from "./scenarios";
+import { mountRegionalLab } from "./regional-view";
+import { mountCascadeEvidence } from "./cascade-evidence";
+import { mountJunctionLab } from "./junction-view";
 
 const github = "https://github.com/ben4mn/universal-traffic-protocol";
 const icon = (name: string) => {
@@ -27,7 +30,7 @@ const icon = (name: string) => {
 document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
   <header class="site-header wrap">
     <a href="#" class="brand" aria-label="Universal Traffic Protocol home"><span class="brand-mark">u<span>t</span>p</span><span class="brand-name">Universal<br>Traffic Protocol</span></a>
-    <nav aria-label="Main navigation"><a class="nav-lab" href="#lab">Simulation</a><a href="#protocol">Protocol</a><a class="source-link" aria-label="Open source on GitHub" href="${github}" target="_blank" rel="noreferrer">${icon("github")}<span>GitHub</span></a></nav>
+    <nav aria-label="Main navigation"><a class="nav-lab" href="#lab">Simulation</a><a href="#junction-lab">Autonomy</a><a href="#regional-lab">City + freeway</a><a href="#protocol">Protocol</a><a class="source-link" aria-label="Open source on GitHub" href="${github}" target="_blank" rel="noreferrer">${icon("github")}<span>GitHub</span></a></nav>
   </header>
   <main>
     <section class="intro wrap" aria-labelledby="headline">
@@ -50,14 +53,18 @@ document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
       <p class="model-caveat">These numbers come from a simplified traffic model. Delay is averaged over finished trips, so check the queues and trip totals too. <a href="${github}/blob/main/docs/simulation.md" target="_blank" rel="noreferrer">See assumptions and limits</a>.</p>
     </section>
 
+    <div id="junction-lab" class="wrap"></div>
+    <div id="regional-lab" class="wrap"></div>
+    <div id="cascade-evidence" class="wrap"></div>
+
     <section id="protocol" class="protocol-section wrap" aria-labelledby="protocol-heading">
-      <div class="section-intro"><p class="eyebrow">02 / THE PROTOCOL</p><h2 id="protocol-heading">What would they<br><em>tell each other?</em></h2><p>They don’t need to share their driving software. They need agreed message formats for things like position, observations, signal timing, and intentions.</p></div>
+      <div class="section-intro"><p class="eyebrow">04 / THE PROTOCOL</p><h2 id="protocol-heading">What would they<br><em>tell each other?</em></h2><p>They don’t need to share their driving software. They need agreed message formats for things like position, observations, signal timing, and intentions.</p></div>
       <div class="protocol-explorer"><div class="participant-list" role="group" aria-label="Explore protocol participants"><button data-participant="vehicle" class="active" aria-pressed="true"><span class="participant-icon">01</span><span><strong>The vehicle</strong><small>Position, speed, and uncertainty</small></span><span class="participant-symbol">+</span></button><button data-participant="signal" aria-pressed="false"><span class="participant-icon">02</span><span><strong>The traffic signal</strong><small>Current state and timing</small></span><span class="participant-symbol">+</span></button><button data-participant="crossing" aria-pressed="false"><span class="participant-icon">03</span><span><strong>The crossing</strong><small>A pedestrian observation</small></span><span class="participant-symbol">+</span></button><button data-participant="parking" aria-pressed="false"><span class="participant-icon">04</span><span><strong>The parking sensor</strong><small>A recent availability reading</small></span><span class="participant-symbol">+</span></button></div><div class="message-panel"><div class="message-heading"><span id="message-type">PRESENCE</span><span>UTP 0.1 / EXAMPLE MESSAGE</span></div><h3 id="participant-title">A vehicle shares its current state.</h3><p id="participant-description">This example reports location and speed, including how uncertain those readings are. The identifier is temporary, and the message expires after one second.</p><pre tabindex="0" aria-label="Protocol message example"><code id="message-code"></code></pre><p class="message-note">Example from the draft specification</p></div></div>
       <div class="principles"><article><span>01</span><h3>Keep proprietary systems.</h3><p>A manufacturer can implement UTP without publishing its driving software. A city sensor can use the same message format.</p></article><article><span>02</span><h3>Reject stale information.</h3><p>Messages expire. Receivers must check the age of a reading, reject duplicates, and verify the map version before using it.</p></article><article><span>03</span><h3>Keep safety decisions local.</h3><p>A message can inform a decision. It cannot grant right of way. Vehicles and city controllers still follow the rules when messages stop.</p></article></div>
       <div class="spec-links"><a class="primary-link" href="${github}/blob/main/docs/protocol.md" target="_blank" rel="noreferrer">Read the v0.1 draft ${icon("code")}</a><a href="${github}/blob/main/protocol/schema.json" target="_blank" rel="noreferrer">View the JSON schema</a><span>7 message types · MIT license</span></div>
     </section>
 
-    <section class="limits-section wrap" aria-labelledby="limits-heading"><div class="limits-title"><p class="eyebrow">03 / WHERE THIS STARTED</p><h2 id="limits-heading">The idea I had<br>when I was <em>seven.</em></h2><p class="large-answer">If everything could communicate,<br>could we eventually get rid of traffic?</p></div><div class="limits-copy"><p>I imagined cars talking to each other, and then the rest of the city joining in: stop signs, traffic lights, crossings, parking sensors.</p><p>More participants would give the network more information. The next question is whether that information leads to better decisions, and how much difference it makes as traffic increases.</p><p>This first version gives us something to try. The protocol is open, and so is the model. We can test where it helps, where it falls short, and what to build next.</p><button id="capacity-test" class="capacity-button">Try twice the traffic ${icon("network")}</button><a class="standards-link" href="${github}/blob/main/docs/standards.md" target="_blank" rel="noreferrer">How this relates to existing V2X standards</a></div></section>
+    <section class="limits-section wrap" aria-labelledby="limits-heading"><div class="limits-title"><p class="eyebrow">05 / WHERE THIS STARTED</p><h2 id="limits-heading">The idea I had<br>when I was <em>seven.</em></h2><p class="large-answer">If everything could communicate,<br>could we eventually get rid of traffic?</p></div><div class="limits-copy"><p>I imagined cars talking to each other, and then the rest of the city joining in: stop signs, traffic lights, crossings, parking sensors.</p><p>More participants would give the network more information. The next question is whether that information leads to better decisions, and how much difference it makes as traffic increases.</p><p>This first version gives us something to try. The protocol is open, and so is the model. We can test where it helps, where it falls short, and what to build next.</p><button id="capacity-test" class="capacity-button">Try twice the traffic ${icon("network")}</button><a class="standards-link" href="${github}/blob/main/docs/standards.md" target="_blank" rel="noreferrer">How this relates to existing V2X standards</a></div></section>
   </main>
   <footer class="wrap"><a class="footer-brand" href="#">UTP / Universal Traffic Protocol</a><p>Started by Ben · Open source under MIT</p><a href="${github}" target="_blank" rel="noreferrer">GitHub ${icon("github")}</a></footer>
   <dialog id="model-dialog"><div class="dialog-top"><span class="eyebrow">ABOUT THE MODEL</span><button id="model-close" class="icon-button" aria-label="Close model explanation">${icon("close")}</button></div><h2>How this comparison works</h2><p>Both cities receive the same trip requests: the same arrival times, starting points, and destinations. The left uses fixed traffic lights. Connected lights on the right can change their timing, and connected vehicles can choose routes using fresh reports.</p><dl><div><dt>Delay per finished trip</dt><dd>The extra travel time for vehicles that have finished, compared with a trip through an empty network. Vehicles still waiting are excluded.</dd></div><div><dt>Trips completed</dt><dd>Vehicles that reached their destination since the run began. Both cities receive the same number of trip requests.</dd></div><div><dt>In the queue</dt><dd>Stopped vehicles, plus vehicles waiting to enter because the road is full. The count includes queues outside the picture.</dd></div><div><dt>Adoption and message loss</dt><dd>Adoption sets how many vehicles and signals participate. Connected signals use reports from sensors and vehicles. If those reports stop arriving, the signals return to fixed timing.</dd></div><div><dt>What is simplified</dt><dd>This is a made-up 3 × 3 street grid. Lanes have limited space, vehicles keep a minimum gap, and signals allow time between conflicting directions. It isn’t calibrated to a real city. The communication links are illustrative, and parking isn’t simulated yet.</dd></div></dl><a href="${github}/blob/main/docs/simulation.md" target="_blank" rel="noreferrer">Read the model and reproducibility notes</a></dialog>
@@ -473,6 +480,9 @@ document
     ),
   );
 setParticipant("vehicle");
+mountJunctionLab($("#junction-lab"));
+mountRegionalLab($("#regional-lab"));
+mountCascadeEvidence($("#cascade-evidence"));
 
 updateScene();
 reset();

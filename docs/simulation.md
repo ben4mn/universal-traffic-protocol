@@ -1,5 +1,7 @@
 # A small city, measured honestly
 
+This document covers the nine-junction vehicle model. The page also has a [35-junction city/freeway flow experiment](regional-model.md) and an [autonomous junction scheduling experiment](autonomous-junction.md). They use different physical abstractions and answer different questions; their measured capacity gains must not be combined without another matched experiment.
+
 The live laboratory compares two deterministic traffic engines receiving the **same travelers**, at the same requested arrival times, with the same origins and destinations. The numbers on the page are calculated from cars moving through finite road lanes. There is no adoption-to-savings formula.
 
 This is a teaching model and an executable hypothesis. It is not a calibrated traffic forecast, an autonomous-driving stack, or evidence that a particular protocol eliminates congestion. The connected experiment changes information availability, signal control, and some routing together. A real evaluation would separate those interventions, compare with existing adaptive signal controllers, and validate against measured traffic.

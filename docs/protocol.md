@@ -162,7 +162,7 @@ Required: `resource_id`, `map_ref`, `observed_at_ms`, `authority_claim`, and `st
 
 `authority_claim` is `controller` or `observer`. An observer may report a signal reading, but cannot set or authorize a signal. A receiver MUST resolve an authenticated controller's permissions against the stated resource and map revision before treating its report as authoritative. Two conflicting authorized reports cause the application to mark the resource unknown and fall back; “last message wins” is not an authority policy.
 
-Signal end bounds MUST be ordered and MUST NOT predate `sent_at_ms` beyond clock uncertainty. They are predictions; an actuated signal may change. A controller adapter MUST preserve pedestrian clearance, conflicting movement interlocks, minimum green, yellow, and all-red timing. The browser simulation's green-wave policy does not implement a signal controller or those interlocks.
+Signal end bounds MUST be ordered and MUST NOT predate `sent_at_ms` beyond clock uncertainty. They are predictions; an actuated signal may change. A controller adapter MUST preserve pedestrian clearance, conflicting movement interlocks, minimum green, yellow, and all-red timing. The browser models are simplified experiments, not deployable signal controllers.
 
 ### 5.5 Coordination offer
 
